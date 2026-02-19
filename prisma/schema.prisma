@@ -53,21 +53,21 @@ enum PublishStatus {
 }
 
 model StaffUser {
-  id            String     @id @default(cuid())
-  email         String     @unique
-  passwordHash  String
-  displayName   String
-  role          StaffRole
-  isActive      Boolean    @default(true)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  displayName  String
+  role         StaffRole
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  createdSlots              AppointmentSlot[]    @relation("SlotCreatedBy")
-  casesAssigned             Case[]               @relation("CaseAssignedTo")
-  caseStatusHistoryChanges  CaseStatusHistory[]  @relation("CaseStatusHistoryChangedBy")
-  caseNotesCreated          CaseNote[]           @relation("CaseNoteCreatedBy")
-  contentItemsAuthored      ContentItem[]        @relation("ContentItemAuthor")
-  auditLogs                 AuditLog[]
+  createdSlots             AppointmentSlot[]   @relation("SlotCreatedBy")
+  casesAssigned            Case[]              @relation("CaseAssignedTo")
+  caseStatusHistoryChanges CaseStatusHistory[] @relation("CaseStatusHistoryChangedBy")
+  caseNotesCreated         CaseNote[]          @relation("CaseNoteCreatedBy")
+  contentItemsAuthored     ContentItem[]       @relation("ContentItemAuthor")
+  auditLogs                AuditLog[]
 }
 
 model Service {
@@ -81,124 +81,124 @@ model Service {
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
 
-  slots               AppointmentSlot[]
-  bookings            Booking[]
+  slots    AppointmentSlot[]
+  bookings Booking[]
 }
 
 model AppointmentSlot {
-  id          String     @id @default(cuid())
-  serviceId   String
-  service     Service    @relation(fields: [serviceId], references: [id])
-  startAtUtc  DateTime
-  endAtUtc    DateTime
-  status      SlotStatus @default(OPEN)
-  capacity    Int        @default(1)
+  id         String     @id @default(cuid())
+  serviceId  String
+  service    Service    @relation(fields: [serviceId], references: [id])
+  startAtUtc DateTime
+  endAtUtc   DateTime
+  status     SlotStatus @default(OPEN)
+  capacity   Int        @default(1)
 
   createdById String?
   createdBy   StaffUser? @relation("SlotCreatedBy", fields: [createdById], references: [id])
 
-  booking     Booking?
+  booking Booking?
 
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@index([serviceId, startAtUtc])
   @@unique([serviceId, startAtUtc])
+  @@index([serviceId, startAtUtc])
 }
 
 model Booking {
-  id             String      @id @default(cuid())
-  serviceId      String
-  service        Service     @relation(fields: [serviceId], references: [id])
+  id        String  @id @default(cuid())
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id])
 
-  slotId         String      @unique
-  slot           AppointmentSlot @relation(fields: [slotId], references: [id])
+  slotId String          @unique
+  slot   AppointmentSlot @relation(fields: [slotId], references: [id])
 
-  bookingCode    String      @unique
-  status         BookingStatus @default(CONFIRMED)
+  bookingCode String        @unique
+  status      BookingStatus @default(CONFIRMED)
 
   applicantName  String
   applicantEmail String
   applicantPhone String?
   applicantNote  String?
 
-  locale         String
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  locale    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  tokens         BookingToken[]
-  case           Case?
+  tokens BookingToken[]
+  case   Case?
 }
 
 model BookingToken {
-  id         String   @id @default(cuid())
-  bookingId  String
-  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
-  tokenHash  String   @unique
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 
   @@index([bookingId])
 }
 
 model Case {
-  id            String      @id @default(cuid())
-  bookingId      String      @unique
-  booking        Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
-  status         CaseStatus  @default(NEW)
-  assignedToId   String?
-  assignedTo     StaffUser?  @relation("CaseAssignedTo", fields: [assignedToId], references: [id])
+  status       CaseStatus @default(NEW)
+  assignedToId String?
+  assignedTo   StaffUser? @relation("CaseAssignedTo", fields: [assignedToId], references: [id])
 
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  statusHistory  CaseStatusHistory[]
-  notes          CaseNote[]
+  statusHistory CaseStatusHistory[]
+  notes         CaseNote[]
 }
 
 model CaseStatusHistory {
-  id          String      @id @default(cuid())
-  caseId       String
-  case         Case        @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  caseId String
+  case   Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
 
-  fromStatus   CaseStatus?
-  toStatus     CaseStatus
-  changedById  String
-  changedBy    StaffUser   @relation("CaseStatusHistoryChangedBy", fields: [changedById], references: [id])
+  fromStatus  CaseStatus?
+  toStatus    CaseStatus
+  changedById String
+  changedBy   StaffUser   @relation("CaseStatusHistoryChangedBy", fields: [changedById], references: [id])
 
-  createdAt    DateTime    @default(now())
+  createdAt DateTime @default(now())
 
   @@index([caseId, createdAt])
 }
 
 model CaseNote {
-  id          String    @id @default(cuid())
-  caseId      String
-  case        Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  caseId String
+  case   Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
 
   note        String
   createdById String
   createdBy   StaffUser @relation("CaseNoteCreatedBy", fields: [createdById], references: [id])
 
-  createdAt   DateTime  @default(now())
+  createdAt DateTime @default(now())
 }
 
 model ContentItem {
-  id          String        @id @default(cuid())
-  type        ContentType
-  slug        String        @unique
-  status      PublishStatus @default(DRAFT)
+  id     String        @id @default(cuid())
+  type   ContentType
+  slug   String        @unique
+  status PublishStatus @default(DRAFT)
 
   contentI18n Json
 
   publishedAt DateTime?
   authorId    String?
-  author      StaffUser?    @relation("ContentItemAuthor", fields: [authorId], references: [id])
+  author      StaffUser? @relation("ContentItemAuthor", fields: [authorId], references: [id])
 
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Setting {
@@ -220,19 +220,19 @@ model EmailOutbox {
 }
 
 model AuditLog {
-  id        String    @id @default(cuid())
-  actorId   String?
-  actor     StaffUser? @relation(fields: [actorId], references: [id])
+  id      String     @id @default(cuid())
+  actorId String?
+  actor   StaffUser? @relation(fields: [actorId], references: [id])
 
-  action    String
+  action     String
   entityType String
-  entityId  String?
+  entityId   String?
   beforeJson Json?
-  afterJson Json?
-  ip        String?
-  userAgent String?
+  afterJson  Json?
+  ip         String?
+  userAgent  String?
 
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   @@index([createdAt])
 }
