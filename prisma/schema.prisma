@@ -62,9 +62,12 @@ model StaffUser {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
-  createdSlots  AppointmentSlot[] @relation("SlotCreatedBy")
-  casesAssigned Case[]            @relation("CaseAssignedTo")
-  auditLogs     AuditLog[]
+  createdSlots              AppointmentSlot[]    @relation("SlotCreatedBy")
+  casesAssigned             Case[]               @relation("CaseAssignedTo")
+  caseStatusHistoryChanges  CaseStatusHistory[]  @relation("CaseStatusHistoryChangedBy")
+  caseNotesCreated          CaseNote[]           @relation("CaseNoteCreatedBy")
+  contentItemsAuthored      ContentItem[]        @relation("ContentItemAuthor")
+  auditLogs                 AuditLog[]
 }
 
 model Service {
@@ -163,7 +166,7 @@ model CaseStatusHistory {
   fromStatus   CaseStatus?
   toStatus     CaseStatus
   changedById  String
-  changedBy    StaffUser   @relation(fields: [changedById], references: [id])
+  changedBy    StaffUser   @relation("CaseStatusHistoryChangedBy", fields: [changedById], references: [id])
 
   createdAt    DateTime    @default(now())
 
@@ -177,7 +180,7 @@ model CaseNote {
 
   note        String
   createdById String
-  createdBy   StaffUser @relation(fields: [createdById], references: [id])
+  createdBy   StaffUser @relation("CaseNoteCreatedBy", fields: [createdById], references: [id])
 
   createdAt   DateTime  @default(now())
 }
@@ -192,7 +195,7 @@ model ContentItem {
 
   publishedAt DateTime?
   authorId    String?
-  author      StaffUser?    @relation(fields: [authorId], references: [id])
+  author      StaffUser?    @relation("ContentItemAuthor", fields: [authorId], references: [id])
 
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
